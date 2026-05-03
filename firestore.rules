@@ -1,0 +1,130 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isAdmin() { 
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    match /users/{userId} {
+      function isValidUserCreate(data) {
+        return data.keys().hasAll(['email', 'name', 'role', 'createdAt']) && data.keys().size() == 4
+          && data.email is string && data.email.size() <= 200
+          && data.name is string && data.name.size() <= 200
+          && data.role in ['admin', 'customer']
+          && (data.createdAt is number || data.createdAt is timestamp);
+      }
+      allow read: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+      // Explicitly allow haithtttb@gmail.com to create an admin account, others can only create customer accounts
+      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId && isValidUserCreate(incoming()) && (incoming().role == 'customer' || (incoming().role == 'admin' && request.auth.token.email == 'haithtttb@gmail.com'));
+      // Changed to only allow role update for admin
+      allow update: if isValidId(userId) && isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['role']) && incoming().role in ['admin', 'customer'];
+      allow delete: if false;
+    }
+
+    match /tours/{tourId} {
+      function isValidTourCreate(data) {
+         return data.keys().hasAll(['name', 'description', 'region', 'tags', 'price', 'image', 'isHidden', 'variants', 'createdAt', 'updatedAt'])
+           && data.name is string && data.name.size() <= 200
+           && data.description is string && data.description.size() <= 10000
+           && data.region is string && data.region.size() <= 100
+           && data.tags is list && data.tags.size() <= 20
+           && data.price is number
+           && data.image is string && data.image.size() <= 1000
+           && data.isHidden is bool
+           && data.variants is list && data.variants.size() <= 50
+           && (data.createdAt is number || data.createdAt is timestamp)
+           && (data.updatedAt is number || data.updatedAt is timestamp);
+      }
+      allow get: if isValidId(tourId) && (existing().isHidden == false || isAdmin());
+      allow list: if (resource.data.isHidden == false || isAdmin());
+      allow create: if isValidId(tourId) && isAdmin() && isValidTourCreate(incoming());
+      allow update: if isValidId(tourId) && isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'region', 'tags', 'price', 'image', 'isHidden', 'variants', 'updatedAt']);
+      allow delete: if isValidId(tourId) && isAdmin();
+    }
+
+    match /orders/{orderId} {
+      function isValidOrderCreate(data) {
+         return data.keys().hasAll(['userId', 'customerName', 'customerEmail', 'customerPhone', 'customerAddress', 'totalAmount', 'discountAmount', 'finalAmount', 'paymentMethod', 'status', 'items', 'createdAt', 'updatedAt'])
+           && data.userId is string && data.userId == request.auth.uid
+           && data.customerName is string && data.customerName.size() <= 200
+           && data.customerEmail is string && data.customerEmail.size() <= 200
+           && data.customerPhone is string && data.customerPhone.size() <= 50
+           && data.customerAddress is string && data.customerAddress.size() <= 500
+           && data.totalAmount is number
+           && data.discountAmount is number
+           && data.finalAmount is number
+           && data.paymentMethod in ['COD', 'VNPay']
+           && data.status == 'Chờ xử lý'
+           && data.items is list && data.items.size() <= 100
+           && (data.createdAt is number || data.createdAt is timestamp)
+           && (data.updatedAt is number || data.updatedAt is timestamp);
+      }
+      allow get: if isValidId(orderId) && isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isValidId(orderId) && isSignedIn() && isValidOrderCreate(incoming());
+      
+      allow update: if isValidId(orderId) && isSignedIn() && (
+        (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) && incoming().status in ['Chờ xử lý', 'Đã xác nhận', 'Đã hủy']) ||
+        (existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) && incoming().status == 'Đã hủy' && existing().status == 'Chờ xử lý')
+      );
+      allow delete: if false;
+    }
+
+    match /news/{newsId} {
+      function isValidNewsCreate(data) {
+         return data.keys().hasAll(['title', 'content', 'image', 'isPublished', 'createdAt', 'updatedAt'])
+           && data.title is string && data.title.size() <= 500
+           && data.content is string && data.content.size() <= 50000
+           && data.image is string && data.image.size() <= 1000
+           && data.isPublished is bool
+           && (data.createdAt is number || data.createdAt is timestamp)
+           && (data.updatedAt is number || data.updatedAt is timestamp);
+      }
+      allow get: if isValidId(newsId) && (existing().isPublished == true || isAdmin());
+      allow list: if (resource.data.isPublished == true || isAdmin());
+      allow create: if isValidId(newsId) && isAdmin() && isValidNewsCreate(incoming());
+      allow update: if isValidId(newsId) && isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'image', 'isPublished', 'updatedAt']);
+      allow delete: if isValidId(newsId) && isAdmin();
+    }
+
+    match /coupons/{couponId} {
+      function isValidCouponCreate(data) {
+         return data.keys().hasAll(['code', 'discountPercentage', 'isActive', 'createdAt'])
+           && data.code is string && data.code.size() <= 50
+           && data.discountPercentage is number
+           && data.isActive is bool
+           && (data.createdAt is number || data.createdAt is timestamp);
+      }
+      allow read: if true;
+      allow create: if isValidId(couponId) && isAdmin() && isValidCouponCreate(incoming());
+      allow update: if isValidId(couponId) && isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['isActive', 'discountPercentage']);
+      allow delete: if isValidId(couponId) && isAdmin();
+    }
+
+    match /contacts/{contactId} {
+      function isValidContactCreate(data) {
+         return data.keys().hasAll(['name', 'email', 'message', 'status', 'createdAt']) && data.keys().size() == 5
+           && data.name is string && data.name.size() <= 200
+           && data.email is string && data.email.size() <= 200
+           && data.message is string && data.message.size() <= 5000
+           && data.status == 'Chờ xử lý'
+           && (data.createdAt is number || data.createdAt is timestamp);
+      }
+      allow read: if isAdmin();
+      allow create: if isValidId(contactId) && isValidContactCreate(incoming());
+      allow update: if isValidId(contactId) && isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status']) && incoming().status in ['Chờ xử lý', 'Đã trả lời'];
+      allow delete: if isValidId(contactId) && isAdmin();
+    }
+  }
+}

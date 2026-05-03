@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Inter:wght@300;400;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F9F7F2;
+  color: #1A3A34;
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+
+.image-overlay {
+  background: linear-gradient(0deg, rgba(26,58,52,0.8) 0%, rgba(26,58,52,0) 60%);
+}
+
+.custom-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-pill {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: #B08D26;
+}

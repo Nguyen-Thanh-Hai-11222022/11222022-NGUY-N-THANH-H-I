@@ -1,0 +1,120 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "customer"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["email", "name", "role", "createdAt"]
+    },
+    "Tour": {
+      "title": "Tour",
+      "description": "Tour package",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "region": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "price": { "type": "number" },
+        "image": { "type": "string" },
+        "isHidden": { "type": "boolean" },
+        "variants": { "type": "array" },
+        "createdAt": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      },
+      "required": ["name", "region", "price", "image", "isHidden", "createdAt", "updatedAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerEmail": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "customerAddress": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "discountAmount": { "type": "number" },
+        "finalAmount": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string", "enum": ["Chờ xử lý", "Đã xác nhận", "Đã hủy"] },
+        "items": { "type": "array" },
+        "createdAt": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      },
+      "required": ["userId", "customerName", "customerEmail", "customerPhone", "customerAddress", "totalAmount", "discountAmount", "finalAmount", "paymentMethod", "status", "items", "createdAt", "updatedAt"]
+    },
+    "News": {
+      "title": "News",
+      "description": "News article",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "isPublished": { "type": "boolean" },
+        "createdAt": { "type": "integer" },
+        "updatedAt": { "type": "integer" }
+      },
+      "required": ["title", "content", "image", "isPublished", "createdAt", "updatedAt"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Discount coupon",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "discountPercentage": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["code", "discountPercentage", "isActive", "createdAt"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Contact message",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["Chờ xử lý", "Đã trả lời"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["name", "email", "message", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "tours/{tourId}": {
+      "schema": { "$ref": "#/entities/Tour" },
+      "description": "Available tours"
+    },
+    "orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer orders"
+    },
+    "news/{newsId}": {
+      "schema": { "$ref": "#/entities/News" },
+      "description": "News articles"
+    },
+    "coupons/{couponId}": {
+      "schema": { "$ref": "#/entities/Coupon" },
+      "description": "Discount coupons"
+    },
+    "contacts/{contactId}": {
+      "schema": { "$ref": "#/entities/Contact" },
+      "description": "Contact messages"
+    }
+  }
+}
