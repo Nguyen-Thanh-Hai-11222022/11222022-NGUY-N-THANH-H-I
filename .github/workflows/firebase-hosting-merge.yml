@@ -32,5 +32,5 @@ jobs:
         uses: treosh/lighthouse-ci-action@v12
         with:
           urls: 'https://gen-lang-client-0914017228.web.app/'
-          uploadArtifacts: false # Lưu kết quả vào mục Artifacts trên GitHub
+          uploadArtifacts: true # Lưu kết quả vào mục Artifacts trên GitHub
           temporaryPublicStorage: true # Tạo link báo cáo online tạm thời
