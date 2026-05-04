@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # Theo dõi các thư viện trong package.json
+    directory: "/"
+    schedule:
+      interval: "weekly" # Kiểm tra hàng tuần
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "javascript-typescript"
