@@ -3,7 +3,7 @@
 
 This contains everything you need to run your app locally.
 
-View your app: https://ai.studio/apps/f43d2538-67bb-4bfd-b95a-5afd0c89b756
+View your app: https://gen-lang-client-0914017228.web.app/
 
 ## Run Locally
 
