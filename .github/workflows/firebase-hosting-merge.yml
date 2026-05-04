@@ -25,3 +25,9 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           content: " Dự án Du Lịch Việt vừa mới được cập nhật !"
+      - name: Audit live site with Lighthouse
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: 'https://gen-lang-client-0914017228.web.app/'
+          uploadArtifacts: true # Lưu kết quả vào mục Artifacts trên GitHub
+          temporaryPublicStorage: true # Tạo link báo cáo online tạm thời
