@@ -1,0 +1,26 @@
+name: Giám sát Web Du Lịch Việt
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Chạy tự động mỗi 5 phút
+  workflow_dispatch:      # Cho phép nhấn nút chạy thử thủ công
+
+jobs:
+  check-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Website Du Lịch Việt
+        run: |
+          STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" https://gen-lang-client-0914017228.web.app/)
+          if [ $STATUS_CODE -ne 200 ]; then
+            echo "Website đang gặp sự cố với mã lỗi: $STATUS_CODE"
+            exit 1
+          fi
+
+      - name: Báo về Discord nếu sập
+        if: failure() # Chỉ chạy nếu bước trước đó thất bại
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: failure
+          content: "⚠️ Website Du Lịch Việt có vẻ đang sập. Kiểm tra ngay nhé!"
