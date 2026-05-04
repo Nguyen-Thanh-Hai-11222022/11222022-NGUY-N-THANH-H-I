@@ -18,3 +18,10 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEN_LANG_CLIENT_0914017228 }}
           channelId: live
           projectId: gen-lang-client-0914017228
+      - name: Discord notification
+        if: always() # Ensure the notification runs even if the deployment fails
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: " Dự án Du Lịch Việt vừa mới được cập nhật !"
